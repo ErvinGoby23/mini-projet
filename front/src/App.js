@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL ;
+const API_URL = process.env.REACT_APP_API_URL;
 
 function App() {
   const [restaurants, setRestaurants] = useState([]);
@@ -14,34 +14,54 @@ function App() {
   }, []);
 
   const fetchRestaurants = async () => {
-    const res = await axios.get(`${API_URL}/restaurants`);
-    setRestaurants(res.data);
+    try {
+      const res = await axios.get(`${API_URL}/restaurants`);
+      setRestaurants(res.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des restaurants :', error);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editing) {
-      await axios.put(`${API_URL}/restaurants/${editing.id}`, form);
-      setEditing(null);
-    } else {
-      await axios.post(`${API_URL}/restaurants`, form);
+    try {
+      const { nom, adresse, note } = form;
+      const noteValue = parseFloat(note);
+      if (noteValue < 0 || noteValue > 5) {
+        alert('Note invalide (doit être entre 0 et 5)');
+        return;
+      }
+
+      if (editing) {
+        await axios.put(`${API_URL}/restaurants/${editing.id}`, { nom, adresse, note: noteValue });
+        setEditing(null);
+      } else {
+        await axios.post(`${API_URL}/restaurants`, { nom, adresse, note: noteValue });
+      }
+
+      setForm({ nom: '', adresse: '', note: '' });
+      fetchRestaurants();
+    } catch (error) {
+      console.error('Erreur lors de l’envoi du formulaire :', error);
     }
-    setForm({ nom: '', adresse: '', note: '' });
-    fetchRestaurants();
   };
 
   const handleEdit = (restaurant) => {
     setForm({
       nom: restaurant.nom,
       adresse: restaurant.adresse,
-      note: restaurant.note,
+      note: restaurant.note.toString(),
     });
     setEditing(restaurant);
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`${API_URL}/restaurants/${id}`);
-    fetchRestaurants();
+    try {
+      await axios.delete(`${API_URL}/restaurants/${id}`);
+      fetchRestaurants();
+    } catch (error) {
+      console.error('Erreur lors de la suppression :', error);
+    }
   };
 
   return (
