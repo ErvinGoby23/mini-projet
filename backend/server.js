@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
@@ -11,9 +10,11 @@ app.use(express.json());
 
 const pool = await mysql.createPool({
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
-  database: process.env.DB_NAME 
+  database: process.env.DB_NAME,
+  ssl: { rejectUnauthorized: true }
 });
 
 app.get('/restaurants', async (req, res, next) => {
@@ -68,4 +69,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(` Backend running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log('Adresse IP du serveur :', require('os').networkInterfaces());
+});
