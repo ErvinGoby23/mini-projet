@@ -3,6 +3,7 @@ import cors from 'cors';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import os from 'os';
+import axios from 'axios';
 
 dotenv.config();
 const app = express();
@@ -61,6 +62,15 @@ app.delete('/restaurants/:id', async (req, res, next) => {
     res.sendStatus(204);
   } catch (err) {
     next(err);
+  }
+});
+
+app.get('/my-ip', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.ipify.org?format=json');
+    res.send(`Adresse IP publique : ${response.data.ip}`);
+  } catch (err) {
+    res.status(500).send('Erreur récupération IP publique');
   }
 });
 
