@@ -78,6 +78,10 @@ app.get('/my-ip', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('API backend opérationnelle !');
+});
+
 // GESTION ERREURS
 app.use((err, req, res, next) => {
   console.error('Erreur :', err);
