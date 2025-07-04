@@ -6,19 +6,22 @@ import os from 'os';
 import axios from 'axios';
 
 dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Connexion MySQL via pool
 const pool = await mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: true }
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
 });
 
+// ROUTES RESTAURANT
 app.get('/restaurants', async (req, res, next) => {
   try {
     const [rows] = await pool.query('SELECT * FROM restaurants');
@@ -65,6 +68,7 @@ app.delete('/restaurants/:id', async (req, res, next) => {
   }
 });
 
+// IP publique (utile pour debug)
 app.get('/my-ip', async (req, res) => {
   try {
     const response = await axios.get('https://api.ipify.org?format=json');
@@ -74,13 +78,15 @@ app.get('/my-ip', async (req, res) => {
   }
 });
 
+// GESTION ERREURS
 app.use((err, req, res, next) => {
   console.error('Erreur :', err);
   res.status(500).json({ error: 'Erreur serveur' });
 });
 
+// DÉMARRAGE SERVEUR
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-  console.log('Adresse IP du serveur :', os.networkInterfaces());
+  console.log(`✅ Backend running on http://localhost:${PORT}`);
+  console.log('🧠 Adresse IP locale :', os.networkInterfaces());
 });
